@@ -1,2 +1,3 @@
 # openvino-runway
-Import OpenVINO models to Runway
+
+Import OpenVINO pretrained models to RunwayML.
