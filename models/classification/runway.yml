@@ -1,0 +1,8 @@
+entrypoint: bash run_model.sh
+python: 3.6
+framework: openvino
+spec:
+  cpu: True
+  gpu: False
+build_steps:
+  - pip3 install -r requirements.txt
