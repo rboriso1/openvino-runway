@@ -51,34 +51,38 @@ from argparse import ArgumentParser, SUPPRESS
 #    'seed': number(min=0, max=1000000, description='A seed used to initialize the model.')
 #}
 
-def build_argparser():
-    parser = ArgumentParser(add_help=False)
-    args = parser.add_argument_group('Options')
-    args.add_argument('-h', '--help', action='help', default=SUPPRESS, help='Show this help message and exit.')
-    args.add_argument("-m", "--model", help="Required. Path to an .xml file with a trained model.", required=True,
-                      type=str)
+#def build_argparser():
+#    parser = ArgumentParser(add_help=False)
+#    args = parser.add_argument_group('Options')
+#    args.add_argument('-h', '--help', action='help', default=SUPPRESS, help='Show this help message and exit.')
+#    args.add_argument("-m", "--model", help="Required. Path to an .xml file with a trained model.", required=True,
+#                      type=str)
 #    args.add_argument("-i", "--input", help="Required. Path to a folder with images or path to an image files",
 #                      required=True,
 #                      type=str, nargs="+")
-    args.add_argument("-l", "--cpu_extension",
-                      help="Optional. Required for CPU custom layers. "
-                           "MKLDNN (CPU)-targeted custom layers. Absolute path to a shared library with the"
-                           " kernels implementations.", type=str, default=None)
-    args.add_argument("-d", "--device",
-                      help="Optional. Specify the target device to infer on; CPU, GPU, FPGA, HDDL, MYRIAD or HETERO: is "
+#    args.add_argument("-l", "--cpu_extension",
+#                      help="Optional. Required for CPU custom layers. "
+#                           "MKLDNN (CPU)-targeted custom layers. Absolute path to a shared library with the"
+#                           " kernels implementations.", type=str, default=None)
+#    args.add_argument("-d", "--device",
+#                      help="Optional. Specify the target device to infer on; CPU, GPU, FPGA, HDDL, MYRIAD or HETERO: is "
+#                           "acceptable. The sample will look for a suitable plugin for device specified. Default "
+#                           "value is CPU",
+#                      default="CPU", type=str)
+#    args.add_argument("--labels", help="Optional. Path to a labels mapping file", default=None, type=str)
+#    args.add_argument("-nt", "--number_top", help="Optional. Number of top results", default=10, type=int)
+#
+#    return parser
+
+@runway.setup(options={
+    'model_directory': runway.directory(description='Path to directory containing the .xml and .bin files for the trained model'),
+    'device': runway.category(choices=['CPU', 'GPU'], description="Optional. Specify the target device to infer on; CPU, GPU, FPGA, HDDL, MYRIAD or HETERO: is "
                            "acceptable. The sample will look for a suitable plugin for device specified. Default "
-                           "value is CPU",
-                      default="CPU", type=str)
-    args.add_argument("--labels", help="Optional. Path to a labels mapping file", default=None, type=str)
-    args.add_argument("-nt", "--number_top", help="Optional. Number of top results", default=10, type=int)
-
-    return parser
-
-@runway.setup
-def setup():
-    #print(msg.format(opts['seed'], opts['truncation']))
-    args = build_argparser().parse_args()
-    model = ExampleModel(args)
+                           "value is CPU", default='CPU'),
+    'number_top': runway.number(default=10, min=1, max=20, description='Optional. Number of top results')
+})
+def setup(options):
+    model = ExampleModel(options)
     return model
 
 # Every model needs to have at least one command. Every command allows to send
