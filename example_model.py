@@ -29,31 +29,41 @@ import numpy as np
 import logging as log
 from time import time
 from openvino.inference_engine import IENetwork, IECore
+from glob import glob
 
 class ExampleModel():
 
-    def __init__(self, args):
-        #random.seed(options['seed'])
-        #self.truncation = options['truncation']
-        #args = build_argparser().parse_args()
-        model_xml = args.model
-        model_bin = os.path.splitext(model_xml)[0] + ".bin"
+    def __init__(self, options):
+        try:
+            model_xml = glob(options['model_directory'] + '/*.xml')[0]
+        except:
+            raise Exception('Could not find .xml file in the specified directory')
+
+        try:
+            model_bin = glob(options['model_directory'] + '/*.bin')[0]
+        except:
+            raise Exception('Could not find .bin file in the specified directory')
+
+        try:
+            model_labels = glob(options['model_directory'] + '/*.labels')[0]
+        except:
+            print('Could not find .labels file, skipping labels')
 
         # Plugin initialization for specified device and load extensions library if specified
         print("Creating Inference Engine")
         ie = IECore()
-        if args.cpu_extension and 'CPU' in args.device:
-            ie.add_extension(args.cpu_extension, "CPU")
+        #if args.cpu_extension and 'CPU' in args.device:
+        #    ie.add_extension(args.cpu_extension, "CPU")
         # Read IR
         print("Loading network files:\n\t{}\n\t{}".format(model_xml, model_bin))
         self.net = IENetwork(model=model_xml, weights=model_bin)
 
-        if "CPU" in args.device:
+        if options['device'] == 'CPU':
             supported_layers = ie.query_network(self.net, "CPU")
             not_supported_layers = [l for l in self.net.layers.keys() if l not in supported_layers]
             if len(not_supported_layers) != 0:
                 print("Following layers are not supported by the plugin for specified device {}:\n {}".
-                          format(args.device, ', '.join(not_supported_layers)))
+                          format(options['device'], ', '.join(not_supported_layers)))
                 print("Please try to specify cpu extensions library path in sample's command line parameters using -l "
                           "or --cpu_extension command line argument")
                 sys.exit(1)
@@ -66,12 +76,12 @@ class ExampleModel():
         self.out_blob = next(iter(self.net.outputs))
         self.net.batch_size = 1 #len(args.input)
 
-        self.labels = args.labels
-        self.number_top = args.number_top
+        self.labels = model_labels
+        self.number_top = options['number_top']
 
         # Loading model to the plugin
         print("Loading model to the plugin")
-        self.exec_net = ie.load_network(network=self.net, device_name=args.device)
+        self.exec_net = ie.load_network(network=self.net, device_name=options['device'])
         print("Model loaded")
 
     # Generate a label based on image.
