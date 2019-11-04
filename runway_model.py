@@ -75,7 +75,7 @@ from argparse import ArgumentParser, SUPPRESS
 #    return parser
 
 @runway.setup(options={
-    'model_directory': runway.directory(description='Path to directory containing the .xml and .bin files for the trained model'),
+    'model_directory': runway.directory(description='Path to directory containing the .xml and .bin files for the trained model', default='./models/squeezenet/1'),
     'device': runway.category(choices=['CPU', 'GPU'], description="Optional. Specify the target device to infer on; CPU, GPU, FPGA, HDDL, MYRIAD or HETERO: is "
                            "acceptable. The sample will look for a suitable plugin for device specified. Default "
                            "value is CPU", default='CPU'),
